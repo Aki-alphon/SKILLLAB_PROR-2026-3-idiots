@@ -108,7 +108,7 @@ List what inspired the project.
 What makes your project original?
 
 **Response:**  
-
+The unique combination of software PWM fading via `gpiozero` and a 100µF capacitor acting as a physical shock absorber creates a truly cinematic, flicker-free LED breathing effect. Unlike basic on/off LED control, our approach produces a silky-smooth, analog-quality glow transition entirely from a digital GPIO pin. Scaling this to a `PWMLEDBoard` with multiple independently pulsing LEDs turns a simple light into an expressive, interactive visual element that elevates the overall project experience.
 
 ---
 
@@ -116,12 +116,10 @@ What makes your project original?
 
 ## 3.1 User Journey 
 
-Describe exactly how a user will use the project.Make it a story
+Describe exactly how a user will use the project. Make it a story.
+
 **Response:**  
-
-                                                  |
-
-
+The room dims. A single red LED begins to breathe—slowly fading in, glowing to full intensity, then gently receding back into darkness, over and over in a 1.5-second pulse. This is the heartbeat of Project Project. The user boots up the Raspberry Pi 3B, the Python script auto-starts, and immediately the LED begins its cinematic pulse. No buttons, no interaction required—the experience begins the moment power is applied. As the user approaches the breadboard prototype, they see the smooth, flicker-free glow made possible by the 100µF capacitor ironing out any microscopic digital noise from the software PWM signal. Once satisfied with the single-LED test, the team expands to a full `PWMLEDBoard` configuration—each new LED assigned to its own GPIO pin with a dedicated 1kΩ current-limiting resistor—creating a cascade of breathing lights that transforms the physical space into an immersive, living light installation.
 
 ---
 
@@ -136,12 +134,14 @@ Describe exactly how a user will use the project.Make it a story
 What is the smallest version of this project that still delivers the core experience?
 
 **Response:**  
-
+A single red LED connected to GPIO 18 via a 1kΩ resistor and a 100µF smoothing capacitor, running the `led.pulse(fade_in_time=1.5, fade_out_time=1.5)` script. This is the validated proof-of-concept that the cinematic fading works before scaling to a full `PWMLEDBoard`.
 
 ## 4.3 Stretch Features
 
-What features are nice to have but not essential?
-
+- Multiple LEDs grouped with `gpiozero.PWMLEDBoard` pulsing in sequence or unison.
+- Varying fade speeds per LED to create a wave-like breathing pattern across the installation.
+- Trigger-based pulsing reacting to camera input or game events in the battlefield experience.
+- RGB LEDs replacing single-color ones for dynamic color-temperature transitions.
 
 ---
 
@@ -188,10 +188,22 @@ Include:
 - app interaction if any.
 
 **Response:**  
+- **Input:** A Python script running on the Raspberry Pi 3B sends a PWM (Pulse Width Modulation) signal from GPIO 18 (Pin 12). The duty cycle of the signal is continuously varied by the `gpiozero` library's `pulse()` function to create a smooth sinusoidal fade pattern.
+- **Processing:** The `gpiozero` `PWMLED` class handles all PWM timing in software. The Pi's hardware PWM-capable GPIO 18 outputs a rapidly switching digital signal whose average voltage changes smoothly over the 1.5-second fade-in and fade-out cycle.
+- **Output:** A red LED breathes smoothly. A 1kΩ resistor limits current to a safe level (~3.3V / 1kΩ ≈ 3.3 mA), and the 100µF electrolytic capacitor in parallel with the LED acts as a low-pass filter, smoothing out any high-frequency PWM noise into a clean analog voltage curve.
+- **Physical Structure:** A breadboard prototype with: Raspberry Pi 3B → GPIO 18 (Pin 12) → 1kΩ resistor → node shared by LED anode and capacitor positive leg → LED cathode and capacitor negative leg → GND (Pin 14).
+- **App Interaction:** None for this subsystem. The script is run directly via terminal (`python3 led_pulse.py`). `signal.pause()` keeps the process alive indefinitely until Ctrl+C.
 
 ## 5.3 Input / Output Map
 
 | System Part                              | Type            | What It Does                                                               |
+| ---------------------------------------- | --------------- | -------------------------------------------------------------------------- |
+| Raspberry Pi 3B GPIO 18 (Pin 12)         | Digital Output  | Outputs software PWM signal to drive LED brightness                        |
+| 1kΩ Resistor                             | Passive / Safety| Limits current through the LED to a safe level (~3.3 mA)                  |
+| 100µF Electrolytic Capacitor             | Passive / Filter| Smooths PWM switching noise into a clean analog voltage curve              |
+| Red LED                                  | Output / Visual | Emits light with brightness proportional to the smoothed PWM duty cycle    |
+| GND (Pin 14)                             | Reference       | Common ground for all components                                           |
+| `gpiozero` PWMLED `pulse()`              | Software        | Continuously varies PWM duty cycle for cinematic fade-in / fade-out effect |
 
 
 ---
@@ -200,32 +212,30 @@ Include:
 
 ## 6.1 Concept Architecture/sketch/schematic
 
-Add an early sketch of the full idea.
+Early hand-drawn sketch of the full system — showing Test Case 1 (single LED pulsing glow circuit) and the planned 3×3 LED matrix layout.
 
-**Insert image below:**  
-`[Upload image and link here]`
+<p align="center">
+  <img src="images/circuit_diagram_v1.jpeg" width="600" alt="Hand-drawn concept sketch — Test Case 1 pulsing glow circuit and 3x3 LED matrix plan">
+</p>
 
-Example:
-
-```md
-
-```
-
-
+*Hand-drawn circuit concept: Pin 12 (GPIO 18) → 1kΩ → LED node with 100µF cap → GND. Lower half shows the planned 3×3 LED matrix layout with shared 1kΩ resistors.*
 
 ## 6.2 Labeled Build Sketch/architecture/flow diagram/algorithm
 
-Add a sketch with labels showing:
+Labeled system architecture showing the multi-LED PWMLEDBoard wiring layout with GPIO pin assignments, resistors, and capacitors per LED.
 
-- structure,
-- electronics placement,
-- user touch points,
-- moving parts,
-- output elements.
+<p align="center">
+  <img src="images/multi_led_architecture.png" width="700" alt="Multi-LED PWMLEDBoard architecture diagram — GPIO pins 17,18,27,22,23,24 each driving a Red LED via 1kΩ resistor and 100µF capacitor to GND">
+</p>
 
-**Insert image below:**  
-`[Upload image and link here]`
-<img width="1600" height="1200" alt="image" src="https://github.com/user-attachments/assets/95637f31-b4e7-4427-a9e1-4b63fbeb0ac5" />
+*System architecture: Each GPIO pin drives its own LED via a dedicated 1kΩ resistor. A 100µF capacitor in parallel with each LED smooths the PWM signal. All grounds share a common GND bus.*
+
+<p align="center">
+  <img src="images/test_ccircuit_version1.jpeg" width="600" alt="Physical build photo — Raspberry Pi 3B connected to breadboard with red LED lit, tested and working">
+</p>
+
+*Physical breadboard prototype: Raspberry Pi 3B (red case) connected to breadboard with red LED actively glowing during PWM pulse test. Verified working — 30 April 2026.*
+
 
 ## 6.3 Approximate Dimensions
 
@@ -242,34 +252,44 @@ Add a sketch with labels showing:
 
 ## 7.1 Electronics Used
 
-| Component                 | Quantity | Purpose                               |
-| ------------------------- | --------:| ------------------------------------- |
-| `[Raspi/FPGA]`                 | `1`      | `[Main controller]`                   |
-| `[L298N Motor Driver]`    | `1`      | `[Control Motors]`                    |
-| `[BO Motors]`             | `2`      | `[Rotate wheels]`                     |
-| `[Buck Converter]`        | `1`      | `[Power ESP32]`                       |
-| `[Li Ion Battery Pack]`   | `2`      | `[Power]`                             |
-| `[Projector]`             | `1`      | `[Display obstacles]`                 |
-| `Camera (Webcam / Phone)` | `1`      | `[Tracks car position using markers]` |
+| Component                   | Quantity | Purpose                                                                     |
+| --------------------------- | --------:| --------------------------------------------------------------------------- |
+| `Raspberry Pi 3B`           | `1`      | `Main controller — runs gpiozero PWM script and GPIO output`                |
+| `Red LED`                   | `1+`     | `Light output — breathes smoothly via PWM duty cycle control`               |
+| `1kΩ Resistor`              | `1 per LED` | `Current limiter — protects LED from over-current (~3.3 mA safe limit)` |
+| `100µF Electrolytic Capacitor` | `1`   | `PWM smoother — filters high-frequency switching noise for flicker-free glow` |
+| `Breadboard`                | `1`      | `Prototyping — holds all components without soldering`                      |
+| `Jumper Wires`              | `3+`     | `Connections between Pi GPIO pins and breadboard components`                |
+| `L298N Motor Driver`        | `1`      | `Controls DC motors for car movement`                                       |
+| `BO Motors`                 | `2`      | `Drive wheels of the car`                                                   |
+| `Buck Converter`            | `1`      | `Steps down battery voltage to stable 5V for Pi`                            |
+| `Li-Ion Battery Pack`       | `2`      | `Portable power source`                                                     |
+| `Projector`                 | `1`      | `Displays game obstacles and battlefield visuals`                           |
+| `Camera (Webcam / Phone)`   | `1`      | `Tracks car position using ArUco markers`                                   |
 
 ## 7.2 Wiring Plan
 
 Describe the main electrical connections.
 
-**sample Response:**  
-`The RASPI is connected to the motor driver (L298N) using four GPIO pins (18,19; 22,23) to control motor direction (IN1, IN2, IN3, IN4). Two PWM-capable pins (ENA and ENB; 25 and 26) are connected to control the speed of each motor.
-
-The motors are connected to the output terminals of the motor driver. The motor driver is powered directly by the battery pack (higher voltage), while the ESP32 receives regulated 5V from the buck converter.
-
-All components share a common ground to ensure stable operation. The projector and camera are connected to the laptop, which handles tracking and game logic separately.`
+**Response:**  
+`The Raspberry Pi 3B GPIO 18 (physical Pin 12) is connected via a wire to a row on the breadboard. A 1kΩ resistor is placed in series from that row to a second row — this row is the shared node. At this shared node, two components are connected in parallel: (1) the Anode (long leg, +) of the Red LED, and (2) the positive leg (longer, marked +) of the 100µF electrolytic capacitor. From this shared node, both the LED Cathode (short leg / flat side) and the capacitor negative leg (shorter, striped side) are connected together and run directly to Pin 14 (GND) on the Raspberry Pi. The 100kΩ resistor is deliberately excluded from this circuit — it would restrict current so severely that the LED would be virtually invisible. Note: the 100µF capacitor must be installed with correct polarity (positive leg to the shared signal node, negative leg to GND) as it is an electrolytic (polarised) component.`
 
 ## 7.3 Circuit Diagram/architecture diagram
 
-Insert a hand-drawn or software-made circuit diagram.
+Software-generated schematic showing the complete single-LED PWM circuit: GPIO 18 → 1kΩ resistor → shared node → Red LED + 100µF capacitor in parallel → GND.
 
-**Insert image below:**  
-`[Upload image and link here]`
-<img width="867" height="1156" alt="" src="" />
+<p align="center">
+  <img src="images/circuit_schematic.png" width="650" alt="Circuit schematic: GPIO 18 to 1kΩ resistor R1, then to shared node with Red LED D1 (Vf=2V) and 100µF capacitor C1 in parallel, both returning to GND">
+</p>
+
+*Schematic: R1 = 1kΩ (current limiter) | D1 = Red LED (Vf ≈ 2V) | C1 = 100µF electrolytic (PWM smoother). The capacitor positive leg connects to the signal node; negative leg to GND.*
+
+<p align="center">
+  <img src="images/circuit_diagram_v1.jpeg" width="500" alt="Hand-drawn circuit diagram showing Test Case 1 pulsing glow layout">
+</p>
+
+*Hand-drawn schematic (Test Case 1) — original design sketch created during planning phase.*
+
 
 
 # 7.4. Power Plan
@@ -287,12 +307,15 @@ Insert a hand-drawn or software-made circuit diagram.
 
 ## 8.1 Software Tools
 
-| Tool / Platform                | Purpose                                        |
-| ------------------------------ | ---------------------------------------------- |
-| `[MicroPython]`                | `Control ESP32`                                |
-| `[Python/PyGame/OpenCV]`       | `Track markers, game logic, create projection` |
-| `[Fusion/Blender/Illustrator]` | `[Prototyping structure]`                      |
-|                                |                                                |
+| Tool / Platform          | Purpose                                                                 |
+| ------------------------ | ----------------------------------------------------------------------- |
+| `Python 3`               | Main scripting language running on Raspberry Pi OS                      |
+| `gpiozero (PWMLED)`      | Controls GPIO 18 PWM output; `pulse()` handles automatic fade in/out    |
+| `gpiozero (PWMLEDBoard)` | Groups multiple LEDs for coordinated multi-pin PWM control at scale     |
+| `signal (pause)`         | Keeps the Python script alive indefinitely without a busy CPU loop      |
+| `Python / PyGame`        | Laptop-side game logic; maps keyboard events to HTTP commands for car   |
+| `OpenCV`                 | Detects ArUco markers via camera to track car position in real time     |
+| `Fusion / Illustrator`   | CAD and vector design for laser-cut structural parts                    |
 
 ## 8.2 Software Logic/Algorithm
 
@@ -328,22 +351,14 @@ Include:
 
 ## 8.3 Code Flowchart
 
-Insert a flowchart showing your code logic.
+Flowchart showing the full PWM LED pulse code logic — from startup through background fade loop to graceful shutdown.
 
-Suggested sequence:
+<p align="center">
+  <img src="images/code_flowchart.png" width="600" alt="Code flowchart: START → Initialize PWMLED on GPIO 18 → pulse() in background thread → Fade IN loop → Fade OUT loop → Repeat. Main thread: signal.pause(). Ctrl+C → Cleanup → END.">
+</p>
 
-- start,
-- initialize,
-- wait for input,
-- read input,
-- decision,
-- trigger output,
-- repeat or reset,
-- error handling.
+*Code logic: `gpiozero` launches `pulse()` in a daemon thread automatically. The main thread blocks on `signal.pause()`. On Ctrl+C, gpiozero cleans up GPIO state before exiting.*
 
-**Insert image below:**  
-<img width="1600" height="1200" alt="image" src="" />
-<img width="1600" height="1200" alt="image" src="" />
 
 
 
@@ -493,17 +508,20 @@ Expected outcomes:
 
 ## 13.1 Risk Register
 
-| Risk                                                            | Type         | Likelihood | Impact   | Mitigation Plan                                                                       | Owner                |
-| --------------------------------------------------------------- | ------------ | ---------- | -------- | ------------------------------------------------------------------------------------- | -------------------- |
-| WiFi connection between laptop and ESP32 becomes unstable       | `Technical`  | `Medium`   | `High`   | Keep ESP32 close, ensure stable power supply, reduce network load, add fail-safe stop | `[Gopal]`           |
-
+| Risk                                                            | Type         | Likelihood | Impact   | Mitigation Plan                                                                                               | Owner         |
+| --------------------------------------------------------------- | ------------ | ---------- | -------- | ------------------------------------------------------------------------------------------------------------- | ------------- |
+| WiFi connection between Pi and laptop becomes unstable          | `Technical`  | `Medium`   | `High`   | Keep Pi close, ensure stable power, reduce network load, add 500 ms fail-safe motor stop                      | `Mrugendra`   |
+| LED flicker visible despite capacitor (wrong capacitor polarity) | `Technical` | `Low`      | `Medium` | Double-check capacitor orientation (+ leg to signal node, − leg to GND) before powering on                   | `Jyoti`       |
+| GPIO 18 PWM conflicts with Pi's audio system (BCM PWM0 shared)  | `Technical`  | `Low`      | `Medium` | Disable Pi audio overlay in `/boot/config.txt` (`dtparam=audio=off`) if PWM jitter is detected               | `Mrugendra`   |
+| Multiple LEDs drawing too much current from single GPIO pin     | `Technical`  | `High`     | `High`   | Assign each additional LED to its own GPIO pin with its own 1kΩ resistor; never share a pin across LEDs       | `Both`        |
+| Projector not bright enough in ambient light                    | `Environment`| `Medium`   | `Medium` | Set up dark environment using Z-boards, paper sheets, and bedsheets to block ambient light                    | `Jyoti`       |
 
 ## 13.2 Biggest Unknown Right Now
 
 What is the single biggest uncertainty in your project at this stage?
 
 **Response:**  
-
+Whether the software PWM signal from `gpiozero` on multiple GPIO pins simultaneously will remain phase-coherent and smooth under CPU load. If the Pi's CPU is busy handling OpenCV camera tracking and HTTP server requests at the same time, PWM timing jitter may become visible as flicker on the LEDs — even with the capacitor. The solution being evaluated is to pre-calculate the `PWMLEDBoard` pulse sequence and offload it to a background thread, keeping LED control isolated from the main processing loop.
 
 ---
 
@@ -511,10 +529,14 @@ What is the single biggest uncertainty in your project at this stage?
 
 ## 14.1 Technical Testing Plan
 
-| What Needs Testing     | How You Will Test It                                                                 | Success Condition                                                                                    |
-| ---------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| `[Wifi connection]`    | `[Check if motor spins via app button]`                                              | `[Both motors accurately respond to wifi signals]`                                                   |
-                       |
+| What Needs Testing                        | How You Will Test It                                                                              | Success Condition                                                                                      |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Single LED PWM fade (GPIO 18)             | Run `led_pulse.py` on Pi 3B; observe LED visually and with a multimeter across the LED terminals | LED breathes smoothly with no visible flicker; voltage across LED traces a smooth sine-like curve      |
+| Capacitor smoothing effectiveness         | Test with and without 100µF capacitor in circuit; compare visual flicker                         | LED is noticeably smoother with capacitor; no microscopic flickering visible to the naked eye          |
+| Resistor current limiting                 | Measure current with 1kΩ resistor in series at 3.3 V GPIO output                                | Current ≤ 3.3 mA; LED glows visibly; no LED or GPIO pin damage                                        |
+| WiFi car control                          | Send HTTP requests from laptop; check if motors spin correctly in each direction                 | Both motors accurately respond to `/forward`, `/left`, `/right`, `/stop` within 200 ms               |
+| Multi-LED PWMLEDBoard scaling             | Connect 3 LEDs on GPIO 17, 18, 27 each with 1kΩ resistor; run `PWMLEDBoard` pulse script        | All 3 LEDs pulse simultaneously without any one LED affecting the others; no GPIO damage               |
+| Camera ArUco tracking                    | Place marker on car; drive through projected obstacle course                                     | Car position tracked accurately; obstacle collision detection triggers within 1 frame delay            |
 ## 14.2 Testing and Debugging Log
 
 | Date          | Problem Found                         | Type         | What You Tried                                | Result               | Next Action                                    |
@@ -589,21 +611,28 @@ Suggested images:
 Describe the final version of your project.
 
 **Response:**  
-
+The final project is a projected, interactive PUBG-style battlefield experience where an RC car (controlled via WiFi from a laptop) navigates a projection-mapped obstacle course. The lighting subsystem features a cinematic, smooth-breathing LED array driven by Raspberry Pi 3B GPIO PWM outputs through `gpiozero`, with 100µF capacitors smoothing the PWM signal into a flicker-free analog glow. The validated single-LED circuit (GPIO 18 → 1kΩ → LED + 100µF cap → GND) has been tested and confirmed to produce a smooth 1.5 s fade-in / 1.5 s fade-out pulse. The RC car uses a dark-room projection environment (constructed from Z-boards and bedsheets) to maximise visual contrast and gameplay immersion.
 
 ## 17.2 What Works Well
 
-
+- The `gpiozero` `PWMLED.pulse()` function produces a reliable, smooth breathing effect with zero manual PWM coding.
+- The 100µF capacitor completely eliminates visible LED flicker at the hardware level.
+- The 1kΩ resistor correctly limits current without noticeably dimming the LED at full brightness.
+- The ArUco marker tracking system accurately maps the car's physical position to the virtual game field.
+- The dark-room enclosure significantly improves projection visibility and game immersion.
 
 ## 17.3 What Still Needs Improvement
 
+- Scaling to a full `PWMLEDBoard` with 6+ LEDs and ensuring CPU load from OpenCV does not introduce PWM jitter.
+- The WiFi latency between laptop commands and motor response can be reduced by switching from HTTP polling to WebSocket communication.
+- The projection mapping calibration needs to be automated — currently it is set manually each session.
 
 ## 17.4 What Changed From the Original Plan
 
 How did the project change from the initial idea?
 
 **Response:**  
-
+Originally, a 100kΩ resistor was considered for current limiting, but testing confirmed it would restrict current so severely that the LED would be virtually invisible. This was replaced with a 1kΩ resistor. The stepper motor approach for position tracking was also dropped in favour of a camera + ArUco marker system, which proved far more reliable and flexible. The LED subsystem was added as a dedicated atmospheric element — initially not in scope — after the team identified it as a key contributor to the cinematic quality of the experience.
 
 ---
 
@@ -616,7 +645,7 @@ What slowed you down?
 How well did you manage time, tasks, and responsibilities?
 
 **Response:**  
-
+The team divided hardware and software responsibilities clearly — Mrugendra handled GPIO coding and app logic while Jyoti managed physical fabrication and electronics assembly. This parallel workflow meant we rarely blocked each other. The biggest slowdown was the resistor selection issue (initially trying 100kΩ which made the LED invisible) and the projector calibration setup taking longer than expected. Time management was generally good, with documentation updated every two hours as per the team agreement.
 
 ## 18.2 Technical Reflection
 
@@ -629,13 +658,17 @@ What did you learn about:
 - integration?
 
 **Response:**  
-
+- **Electronics:** We learned that PWM signals are fundamentally digital switching signals, and a capacitor is required to convert that switching pattern into a smooth analog voltage. We also learned that resistor choice is critical — a 100kΩ resistor is appropriate for a voltage divider or pull-up, not for an LED in a PWM circuit.
+- **Coding:** The `gpiozero` library abstracts PWM complexity beautifully. `PWMLED.pulse()` handles threading, timing, and duty cycle ramping internally. `signal.pause()` is the idiomatic way to keep a script alive without a busy loop.
+- **Mechanisms:** The caster wheel addition for car balance was a simple mechanical fix that dramatically improved stability during navigation.
+- **Fabrication:** Laser cutting with CAD-designed parts produces far cleaner results than manual cutting. Sawdust + adhesive as gap filler is an effective and cheap finishing technique.
+- **Integration:** The hardest part of integration was ensuring all systems shared a common ground. Floating grounds caused erratic motor behaviour and inconsistent PWM readings until properly resolved.
 
 ## 18.3 Design Reflection
 
 What did you learn about:
 
-- designing ,
+- designing,
 - delight,
 - clarity,
 - physical interaction,
@@ -643,15 +676,19 @@ What did you learn about:
 - iteration?
 
 **Response:**  
-
+- **Designing:** Starting with a clear minimum usable version and then layering stretch features is far more effective than trying to build everything at once.
+- **Delight:** The breathing LED effect — simple in code, one capacitor in hardware — created a disproportionate amount of perceived quality and polish. Small sensory details create outsized emotional impact.
+- **Clarity:** The projection mapping needed to be immediately legible to a new user within 5 seconds. Obstacles needed stronger visual contrast — the red highlight suggestion from playtesting was correct.
+- **Physical interaction:** Users respond strongly to physical objects they can touch and control. The RC car being a real, tangible object in the projected world was the central "wow" moment of the experience.
+- **Understanding:** We underestimated how long projector setup and room darkening would take. Build time estimates for physical environment work should be doubled.
+- **Iteration:** The single-LED test before scaling to `PWMLEDBoard` was the right call — it validated the entire approach in 10 minutes and saved hours of debugging.
 
 ## 18.4 If You Had One More hour
 
 What would you improve next?
 
 **Response:**  
-
-` `
+With one more hour, we would implement the full `PWMLEDBoard` configuration — assigning one LED per GPIO pin (GPIO 17, 18, 27, 22, 23, 24) with individual 1kΩ resistors and 100µF capacitors — and program a wave-sequence pulse where each LED fades in 0.2 s after the previous one, creating a cascading breathing effect across the entire installation. This single upgrade would transform the light design from a test element into a finished, cinematic atmospheric feature.
 
 ---
 
@@ -676,11 +713,13 @@ Before submission, confirm that:
 - [x] Playtesting notes are included
 - [x] Build photos are included
 - [x] Final reflection is written
-<img width="1131" height="1600" alt="image" src="" />
+
+
+---
+
 
 ---
 
 
----
 
 
